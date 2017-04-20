@@ -3,7 +3,7 @@ from PIL import Image
 import glob,os
 size=256,256
 cnt = 0
-for infile in glob.glob(r"../pic_raw*.jpg"):
+for infile in glob.glob(r"../pic_raw/*.jpg"):
     file,ext=os.path.splitext(infile) 
     im=Image.open(infile)
     minsize = min(im.size)
