@@ -17,20 +17,22 @@ train_data = numpy.zeros((0, 65536), dtype="int")
 test_label = numpy.zeros((0, 65536), dtype="int")
 test_data = numpy.zeros((0, 65536), dtype="int")
 
-filelist = os.listdir(dir_path)
+filelist = os.listdir(raw_path)
 print(len(filelist))
 cnt = 0
+limit = 16
 
 for infile in filelist:
+    gauss = numpy.random.normal(0, limit, 65536)
     if cnt >= testNum:
-        img_train_data = numpy.array(Image.open(dir_path+infile)).reshape(1, 65536)
+        img_train_data = numpy.array(Image.open(raw_path+infile)).reshape(1, 65536)+gauss
         train_data = numpy.row_stack((train_data, img_train_data))
-        img_train_label = numpy.array(Image.open(raw_path+infile)).reshape(1, 65536)
+        img_train_label = gauss
         train_label = numpy.row_stack((train_label, img_train_label))
     else:
-        img_test_data = numpy.array(Image.open(dir_path + infile)).reshape(1, 65536)
+        img_test_data = numpy.array(Image.open(raw_path + infile)).reshape(1, 65536)+gauss
         test_data = numpy.row_stack((test_data, img_test_data))
-        img_test_label = numpy.array(Image.open(raw_path + infile)).reshape(1, 65536)
+        img_test_label = gauss
         test_label = numpy.row_stack((test_label, img_test_label))
 
     cnt = cnt+1
