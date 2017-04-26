@@ -59,8 +59,9 @@ h_conv1 = conv2d(x_image, W_conv1) + b_conv1
 
 W_conv2 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
 b_conv2 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
-y = h_conv2
+#h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
+h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
+y = tf.reshape(h_conv2, [200, 65536])
 
 #W_fc1 = weight_variable([256 * 256 * 20, 65536])  # 全连接层
 #b_fc1 = bias_variable([65536])  # 偏置量
@@ -74,7 +75,7 @@ keep_prob = tf.placeholder("float")
 #b_fc2 = bias_variable([65536])
 #y = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
-cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
+cross_entropy = -tf.reduce_sum(y_ * y)
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
@@ -106,7 +107,7 @@ for i in range(5000):
 
 
 saver = tf.train.Saver()
-save_path = r"C:\Users\lijin\PycharmProjects\ustccode_tensorflow\model\model.ckpt"
+save_path = r"model\model.ckpt"
 saver.save(sess, save_path)
 
 

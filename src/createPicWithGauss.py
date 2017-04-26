@@ -3,7 +3,7 @@ from PIL import Image
 import glob,os
 import numpy as np
 
-limit = 8
+limit = 12
 
 for infile in glob.glob(r'..\pic_raw\*.png'):
     im = Image.open(infile)
