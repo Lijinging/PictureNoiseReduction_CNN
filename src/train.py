@@ -38,18 +38,19 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                           strides=[1, 2, 2, 1], padding='SAME')
 
-
-sess = tf.InteractiveSession()
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.8
+sess = tf.InteractiveSession(config=config)
 
 x = tf.placeholder(tf.float32, shape=[None, 65536])
 y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
 x_image = tf.reshape(x, [-1, 256, 256, 1])
 
-W_conv1 = weight_variable([5, 5, 1, 20])  # 第一层卷积层
-b_conv1 = bias_variable([20])  # 第一层卷积层的偏置量
-#h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
-h_conv1 = conv2d(x_image, W_conv1) + b_conv1
+W_conv1 = weight_variable([5, 5, 1, 10])  # 第一层卷积层
+b_conv1 = bias_variable([10])  # 第一层卷积层的偏置量
+h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+#h_conv1 = conv2d(x_image, W_conv1) + b_conv1
 #h_pool1 = max_pool_2x2(h_conv1)  # 第一次池化层
 
 #W_conv2 = weight_variable([5, 5, 20, 50])  # 第二次卷积层
@@ -57,11 +58,11 @@ h_conv1 = conv2d(x_image, W_conv1) + b_conv1
 #h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 #h_pool2 = max_pool_2x2(h_conv2)  # 第二曾池化层
 
-W_conv2 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
+W_conv2 = weight_variable([5, 5, 10, 1])  # 第二次卷积层
 b_conv2 = bias_variable([1])  # 第二层卷积层的偏置量
-#h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
-h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
-y = tf.reshape(h_conv2, [200, 65536])
+h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
+#h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
+y = tf.reshape(h_conv2, [-1, 65536])
 
 #W_fc1 = weight_variable([256 * 256 * 20, 65536])  # 全连接层
 #b_fc1 = bias_variable([65536])  # 偏置量
@@ -96,7 +97,7 @@ def next_batch(data, label, begin, length):
 
 
 for i in range(5000):
-    size = 200
+    size = 10
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
@@ -107,7 +108,7 @@ for i in range(5000):
 
 
 saver = tf.train.Saver()
-save_path = r"model\model.ckpt"
+save_path = r"..\model\model.ckpt"
 saver.save(sess, save_path)
 
 
