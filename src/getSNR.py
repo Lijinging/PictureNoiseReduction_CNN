@@ -1,12 +1,13 @@
 # coding:gbk
 
 from PIL import Image
+import numpy
 
-pic_path=r'..\pic_gauss\0.png'
-pic_origin_path=r'..\pic_raw\0.png'
+pic_path=r'..\pic_gauss\28.png'
+pic_origin_path=r'..\pic_raw\28.png'
 
-pic = Image.open(pic_path)
-pic_origin = Image.open(pic_origin_path)
+pic = Image.open(pic_path).convert("L")
+pic_origin = Image.open(pic_origin_path).convert("L")
 
 
 
@@ -17,13 +18,12 @@ def getSNR(img, img_origin):
     print(size)
     for i in range(size[0]):
         for j in range(size[1]):
-            for k in range(3):
-                S = S + img.getpixel((i,j))**2
-                N = N + (img.getpixel((i,j))-img_origin.getpixel((i,j)))**2
+            S = S + img.getpixel((i,j))**2
+            N = N + (img.getpixel((i,j))-img_origin.getpixel((i,j)))**2
     if N==0:
-        print("SNR = INT")
+        print("SNR = INF")
     else:
-        print("SNR =", float(S)/N)
+        print("SNR =", 10*numpy.log10(float(S)/N))
 
 
 

@@ -23,7 +23,7 @@ cnt = 0
 limit = 16
 
 for infile in filelist:
-    gauss = numpy.random.normal(0, limit, 65536)
+    gauss = numpy.random.normal(0, limit, 65536).astype(int)
     if cnt >= testNum:
         img_train_data = numpy.array(Image.open(raw_path+infile)).reshape(1, 65536)+gauss
         train_data = numpy.row_stack((train_data, img_train_data))
