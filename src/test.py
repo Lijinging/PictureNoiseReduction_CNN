@@ -78,7 +78,8 @@ y_ = test_data_raw['label'][:10, -1]
 
 '''开始预测'''
 pred = sess.run(y, feed_dict={x: test_data, keep_prob:1.0})
-pred = int(pred*256.0)
+pred = pred*256.0
+pred = pred.astype(int)
 
 print(pred)
 print(y_)
