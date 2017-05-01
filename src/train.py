@@ -47,8 +47,8 @@ y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
 x_image = tf.reshape(x, [-1, 256, 256, 1])
 
-W_conv1 = weight_variable([5, 5, 1, 10])  # 第一层卷积层
-b_conv1 = bias_variable([10])  # 第一层卷积层的偏置量
+W_conv1 = weight_variable([5, 5, 1, 20])  # 第一层卷积层
+b_conv1 = bias_variable([20])  # 第一层卷积层的偏置量
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 #h_conv1 = conv2d(x_image, W_conv1) + b_conv1
 #h_pool1 = max_pool_2x2(h_conv1)  # 第一次池化层
@@ -58,9 +58,9 @@ h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 #h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 #h_pool2 = max_pool_2x2(h_conv2)  # 第二曾池化层
 
-W_conv2 = weight_variable([5, 5, 10, 1])  # 第二次卷积层
+W_conv2 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
 b_conv2 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
+h_conv2 = tf.nn.tanh(conv2d(h_conv1, W_conv2) + b_conv2)
 #h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
 y = tf.reshape(h_conv2, [-1, 65536])
 
@@ -76,10 +76,10 @@ keep_prob = tf.placeholder("float")
 #b_fc2 = bias_variable([65536])
 #y = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
-cross_entropy = -tf.reduce_sum(y_ * y)
+cross_entropy = tf.reduce_sum((y_ - y)**2)
 train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 sess.run(tf.global_variables_initializer())
 
 
@@ -96,15 +96,19 @@ def next_batch(data, label, begin, length):
     return add
 
 
-for i in range(5000):
+for i in range(20000):
     size = 10
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    if i % 100 == 0:
+    if i % 20 == 0:
         print(i, end=":")
         print("test accuracy %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))
+    if i % 200 == 0:
+        saver = tf.train.Saver()
+        save_path = r"..\model\model_%d.ckpt" % i
+        saver.save(sess, save_path)
 
 
 saver = tf.train.Saver()
