@@ -6,8 +6,8 @@ import _thread
 
 limit = 16
 
-for infile in glob.glob(r'..\pic_raw\*.png'):
-    im = Image.open(infile)
+for infile in glob.glob(r'..\pic_raw\lena.png'):
+    im = Image.open(infile).convert('L')
     for i in range(im.size[0]):
         gauss = np.random.normal(0, limit, im.size[1])
         for j in range(im.size[1]):

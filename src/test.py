@@ -1,7 +1,9 @@
 # coding:utf-8
 import tensorflow as tf
-import scipy.io as scio
+import scipy.io
+import scipy.misc
 import numpy as np
+from PIL import Image
 
 
 def weight_variable(shape):
@@ -70,19 +72,47 @@ saver.restore(sess, save_path)
 '''
 设置输入数据
 '''
-test_data_raw = scio.loadmat("../data/test.mat")
+test_data_raw = scipy.io.loadmat("../data/test.mat")
 # 数据归一化
 test_data = test_data_raw['data'][:10].astype('float32') / 255.0
 # label:
 y_ = test_data_raw['label'][:10, -1]
 
+
+im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1,65536)
+im_test = im_test.astype('float32') / 255.0
+
+im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65536)
+
+
 '''开始预测'''
-pred = sess.run(y, feed_dict={x: test_data, keep_prob:1.0})
+pred = sess.run(y, feed_dict={x: im_test, keep_prob:1.0})
+im_out = im_test - pred
+im_out = im_out*256.0
+im_out = im_out.astype(int)
+for i in range(im_out.shape[0]):
+    for j in range(im_out.shape[1]):
+        if im_out[i][j]<0:
+            im_out[i][j] = 0
+        elif im_out[i][j]>255:
+            im_out[i][j] = 255
 pred = pred*256.0
 pred = pred.astype(int)
+for i in range(pred.shape[0]):
+    for j in range(pred.shape[1]):
+        if pred[i][j]<0:
+            pred[i][j] = -pred[i][j]
+        elif pred[i][j]>255:
+            pred[i][j] = 255
+
+
+scipy.misc.imsave('../vis/lena.jpg', im_out.reshape(256,256))
+scipy.misc.imsave('../vis/lena_noise.jpg', pred.reshape(256,256))
+scipy.misc.imsave('../vis/lena_label.jpg', im_label.reshape(256,256))
 
 print(pred)
-print(y_)
+print(im_out)
+print(im_label)
 #print(LABELS[np.argmax(pred, 1)])
 #print(LABELS[y_])
 
