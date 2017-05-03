@@ -13,11 +13,14 @@ test_data_raw = scio.loadmat("../data/test.mat")
 # 数据归一化
 train_data = train_data_raw['data'].astype('float32') / 255.0
 test_data = test_data_raw['data'].astype('float32') / 255.0
+
+train_label = train_data_raw['label'].astype('float32') / 255.0
+test_label = test_data_raw['label'].astype('float32') / 255.0
 # label:
-train_label = np.zeros((train_data.shape[0], 65536))
-test_label = np.zeros((test_data.shape[0], 65536))
-train_label[np.array(range(train_data_raw['label'].shape[0])), train_data_raw['label'][:, 0]] = 1
-test_label[np.array(range(test_data_raw['label'].shape[0])), test_data_raw['label'][:, 0]] = 1
+#train_label = np.zeros((train_data.shape[0], 65536))
+#test_label = np.zeros((test_data.shape[0], 65536))
+#train_label[np.array(range(train_data_raw['label'].shape[0])), train_data_raw['label'][:, 0]] = 1
+#test_label[np.array(range(test_data_raw['label'].shape[0])), test_data_raw['label'][:, 0]] = 1
 
 
 def weight_variable(shape):
