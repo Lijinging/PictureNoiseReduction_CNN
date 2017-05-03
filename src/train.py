@@ -76,8 +76,8 @@ y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
 x_image = tf.reshape(x, [-1, 256, 256, 1])
 
-W_conv1 = weight_variable([5, 5, 1, 20])  # 第一层卷积层
-b_conv1 = bias_variable([20])  # 第一层卷积层的偏置量
+W_conv1 = weight_variable([5, 5, 1, 24])  # 第一层卷积层
+b_conv1 = bias_variable([24])  # 第一层卷积层的偏置量
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 #h_conv1 = conv2d(x_image, W_conv1) + b_conv1
 #h_pool1 = max_pool_2x2(h_conv1)  # 第一次池化层
@@ -88,16 +88,21 @@ h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 #h_pool2 = max_pool_2x2(h_conv2)  # 第二曾池化层
 
 
-W_conv2 = weight_variable([5, 5, 20, 20])  # 第二次卷积层
-b_conv2 = bias_variable([20])  # 第二层卷积层的偏置量
+W_conv2 = weight_variable([5, 5, 24, 24])  # 第二次卷积层
+b_conv2 = bias_variable([24])  # 第二层卷积层的偏置量
 h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
 #h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
 
-W_conv3 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
-b_conv3 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv3 = tf.nn.tanh(conv2d(h_conv2, W_conv3) + b_conv3)
+W_conv3 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
+b_conv3 = bias_variable([24])  # 第二层卷积层的偏置量
+h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
+#h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
+
+W_conv4 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
+b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
+h_conv4 = tf.nn.tanh(conv2d(h_conv3, W_conv4) + b_conv4)
 #h_conv3 = conv2d(h_conv1, W_conv2) + b_conv2
-y = tf.reshape(h_conv3, [-1, 65536])
+y = tf.reshape(h_conv4, [-1, 65536])
 
 #W_fc1 = weight_variable([256 * 256 * 20, 65536])  # 全连接层
 #b_fc1 = bias_variable([65536])  # 偏置量
