@@ -112,7 +112,7 @@ keep_prob = tf.placeholder("float")
 #y = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 cross_entropy = tf.reduce_sum((y_ - y)**2)
-train_step = tf.train.AdamOptimizer(2e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(8e-4).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 sess.run(tf.global_variables_initializer())

@@ -1,7 +1,8 @@
 # coding:utf-8
 import tensorflow as tf
-import scipy.io
+from src import getSNR
 import scipy.misc
+import scipy.io
 import numpy as np
 from PIL import Image
 
@@ -101,7 +102,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.8
 sess = tf.InteractiveSession(config=config)
 
 saver = tf.train.Saver()
-save_path = r"..\model\model_18400.ckpt"
+save_path = r"..\model\model.ckpt"
 saver.restore(sess, save_path)
 
 '''
@@ -115,7 +116,7 @@ y_ = test_data_raw['label'][:10, -1]
 
 
 im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1,65536)
-scipy.misc.imsave('../vis/lena_test.jpg', im_test.reshape(256,256))
+scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(256,256))
 im_test = im_test.astype('float32') / 255.0
 
 im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65536)
@@ -142,13 +143,19 @@ for i in range(pred.shape[0]):
             pred[i][j] = 255
 
 
-scipy.misc.imsave('../vis/lena.jpg', im_out.reshape(256,256))
-scipy.misc.imsave('../vis/lena_noise.jpg', pred.reshape(256,256))
-scipy.misc.imsave('../vis/lena_label.jpg', im_label.reshape(256,256))
+scipy.misc.imsave('../vis/1lena.jpg', im_out.reshape(256,256))
+scipy.misc.imsave('../vis/3lena_noise.jpg', pred.reshape(256,256))
+scipy.misc.imsave('../vis/2lena_label.jpg', im_label.reshape(256,256))
 
 print(pred)
 print(im_out)
 print(im_label)
+print("Before   ", end=':')
+getSNR.getSNR(Image.open(r'../vis/0lena_test.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
+print("After    ", end=':')
+getSNR.getSNR(Image.open(r'../vis/1lena.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
+print("Ps       ", end=':')
+getSNR.getSNR(Image.open(r'../vis/lena_ps.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
 #print(LABELS[np.argmax(pred, 1)])
 #print(LABELS[y_])
 
