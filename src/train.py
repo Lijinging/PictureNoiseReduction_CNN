@@ -41,6 +41,32 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                           strides=[1, 2, 2, 1], padding='SAME')
 
+def batchnormalize(X, eps=1e-8, g=None, b=None):
+    if X.get_shape().ndims == 4:
+        mean = tf.reduce_mean(X, [0, 1, 2])
+        std = tf.reduce_mean(tf.square(X - mean), [0, 1, 2])
+        X = (X - mean) / tf.sqrt(std + eps)
+
+        if g is not None and b is not None:
+            g = tf.reshape(g, [1, 1, 1, -1])
+            b = tf.reshape(b, [1, 1, 1, -1])
+            X = X * g + b
+
+    elif X.get_shape().ndims == 2:
+        mean = tf.reduce_mean(X, 0)
+        std = tf.reduce_mean(tf.square(X - mean), 0)
+        X = (X - mean) / tf.sqrt(std + eps)
+
+        if g is not None and b is not None:
+            g = tf.reshape(g, [1, -1])
+            b = tf.reshape(b, [1, -1])
+            X = X * g + b
+
+    else:
+        raise NotImplementedError
+
+    return X
+
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.8
 sess = tf.InteractiveSession(config=config)
@@ -64,7 +90,7 @@ h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 
 W_conv2 = weight_variable([5, 5, 20, 20])  # 第二次卷积层
 b_conv2 = bias_variable([20])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
+h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
 #h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
 
 W_conv3 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
@@ -86,7 +112,7 @@ keep_prob = tf.placeholder("float")
 #y = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 cross_entropy = tf.reduce_sum((y_ - y)**2)
-train_step = tf.train.AdamOptimizer(8e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(2e-4).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 sess.run(tf.global_variables_initializer())
