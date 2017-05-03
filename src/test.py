@@ -56,8 +56,8 @@ y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
 x_image = tf.reshape(x, [-1, 256, 256, 1])
 
-W_conv1 = weight_variable([5, 5, 1, 20])  # 第一层卷积层
-b_conv1 = bias_variable([20])  # 第一层卷积层的偏置量
+W_conv1 = weight_variable([5, 5, 1, 24])  # 第一层卷积层
+b_conv1 = bias_variable([24])  # 第一层卷积层的偏置量
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 #h_pool1 = max_pool_2x2(h_conv1)  # 第一次池化层
 
