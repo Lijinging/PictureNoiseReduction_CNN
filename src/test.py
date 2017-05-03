@@ -41,11 +41,22 @@ h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 #h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 #h_pool2 = max_pool_2x2(h_conv2)  # 第二曾池化层
 
-W_conv2 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
-b_conv2 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.tanh(conv2d(h_conv1, W_conv2) + b_conv2)
+# W_conv2 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
+# b_conv2 = bias_variable([1])  # 第二层卷积层的偏置量
+# h_conv2 = tf.nn.tanh(conv2d(h_conv1, W_conv2) + b_conv2)
+# #h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
+# y = tf.reshape(h_conv2, [-1, 65536])
+
+W_conv2 = weight_variable([5, 5, 20, 20])  # 第二次卷积层
+b_conv2 = bias_variable([20])  # 第二层卷积层的偏置量
+h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2) + b_conv2)
 #h_conv2 = conv2d(h_conv1, W_conv2) + b_conv2
-y = tf.reshape(h_conv2, [-1, 65536])
+
+W_conv3 = weight_variable([5, 5, 20, 1])  # 第二次卷积层
+b_conv3 = bias_variable([1])  # 第二层卷积层的偏置量
+h_conv3 = tf.nn.tanh(conv2d(h_conv2, W_conv3) + b_conv3)
+#h_conv3 = conv2d(h_conv1, W_conv2) + b_conv2
+y = tf.reshape(h_conv3, [-1, 65536])
 
 #W_fc1 = weight_variable([2 * 2 * 50, 500])  # 全连接层
 #b_fc1 = bias_variable([500])  # 偏置量
@@ -80,6 +91,7 @@ y_ = test_data_raw['label'][:10, -1]
 
 
 im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1,65536)
+scipy.misc.imsave('../vis/lena_test.jpg', im_test.reshape(256,256))
 im_test = im_test.astype('float32') / 255.0
 
 im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65536)
@@ -88,7 +100,7 @@ im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65
 '''开始预测'''
 pred = sess.run(y, feed_dict={x: im_test, keep_prob:1.0})
 im_out = im_test - pred
-im_out = im_out*256.0
+im_out = im_out*255.0
 im_out = im_out.astype(int)
 for i in range(im_out.shape[0]):
     for j in range(im_out.shape[1]):
@@ -96,7 +108,7 @@ for i in range(im_out.shape[0]):
             im_out[i][j] = 0
         elif im_out[i][j]>255:
             im_out[i][j] = 255
-pred = pred*256.0
+pred = pred*255.0
 pred = pred.astype(int)
 for i in range(pred.shape[0]):
     for j in range(pred.shape[1]):
