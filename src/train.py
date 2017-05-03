@@ -143,7 +143,7 @@ for i in range(20000):
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
     if i % 20 == 0:
         print(i, end=":")
-        print("test accuracy %g" % accuracy.eval(feed_dict={
+        print("test loss %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))
     if i % 200 == 0:
         saver = tf.train.Saver()
