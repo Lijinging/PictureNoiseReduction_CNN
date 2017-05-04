@@ -18,6 +18,8 @@ test_label = numpy.zeros((0, 65536), dtype="int")
 test_data = numpy.zeros((0, 65536), dtype="int")
 
 filelist = os.listdir(raw_path)
+filelist = numpy.array(filelist)
+numpy.random.shuffle(filelist)
 print(len(filelist))
 cnt = 0
 limit = 16
