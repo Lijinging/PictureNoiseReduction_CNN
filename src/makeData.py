@@ -23,6 +23,10 @@ cnt = 0
 limit = 16
 
 for infile in filelist:
+
+    cnt = cnt + 1
+    print(cnt, infile)
+
     gauss = numpy.random.normal(0, limit, 65536).astype(int)
     if cnt >= testNum:
         img_train_data = numpy.array(Image.open(raw_path+infile)).reshape(1, 65536)+gauss
@@ -35,8 +39,7 @@ for infile in filelist:
         img_test_label = gauss
         test_label = numpy.row_stack((test_label, img_test_label))
 
-    cnt = cnt+1
-    print(cnt)
+
 
 
 sio.savemat(mat_path+'train.mat', {'data': train_data, 'label': train_label})
