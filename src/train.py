@@ -139,7 +139,7 @@ def next_batch(data, label, begin, length):
 
 
 for i in range(5000):
-    size = 5
+    size = 10
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
