@@ -121,7 +121,7 @@ for i in range(9000):
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-    if i % 5 == 0:
+    if i % 50 == 0:
         print(i, end=":")
         print("test loss %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))

@@ -10,11 +10,11 @@ import numpy as np
 train_data_raw = scio.loadmat("../data/train.mat")
 test_data_raw = scio.loadmat("../data/test.mat")
 # 数据归一化
-train_data = train_data_raw['data'].astype('float32') / 255.0
-test_data = test_data_raw['data'].astype('float32') / 255.0
+train_data = train_data_raw['data'].astype('float32')
+test_data = test_data_raw['data'].astype('float32')
 
-train_label = train_data_raw['label'].astype('float32') / 255.0
-test_label = test_data_raw['label'].astype('float32') / 255.0
+train_label = train_data_raw['label'].astype('float32')
+test_label = test_data_raw['label'].astype('float32')
 
 
 # label:

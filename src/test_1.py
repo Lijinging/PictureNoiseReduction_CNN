@@ -92,14 +92,14 @@ saver.restore(sess, save_path)
 '''
 test_data_raw = scipy.io.loadmat("../data/test.mat")
 # 数据归一化
-test_data = test_data_raw['data'][:10].astype('float32') / 255.0
+test_data = test_data_raw['data'][:10].astype('float32')
 # label:
 y_ = test_data_raw['label'][:10, -1]
 
 
 im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1,65536)
 scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(256,256))
-im_test = im_test.astype('float32') / 255.0
+im_test = im_test.astype('float32')
 
 im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65536)
 
@@ -107,7 +107,6 @@ im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65
 '''开始预测'''
 pred = sess.run(y, feed_dict={x: im_test, keep_prob:1.0})
 im_out = im_test - pred
-im_out = im_out*255.0
 im_out = im_out.astype(int)
 for i in range(im_out.shape[0]):
     for j in range(im_out.shape[1]):
@@ -115,7 +114,6 @@ for i in range(im_out.shape[0]):
             im_out[i][j] = 0
         elif im_out[i][j]>255:
             im_out[i][j] = 255
-pred = pred*255.0
 pred = pred.astype(int)
 for i in range(pred.shape[0]):
     for j in range(pred.shape[1]):
