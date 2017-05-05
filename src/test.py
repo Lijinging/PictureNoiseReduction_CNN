@@ -88,19 +88,7 @@ b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
 h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
 y = tf.reshape(h_conv4, [-1, 65536])
 
-#W_fc1 = weight_variable([2 * 2 * 50, 500])  # 全连接层
-#b_fc1 = bias_variable([500])  # 偏置量
-#h_pool2_flat = tf.reshape(h_pool2, [-1, 2 * 2 * 50])
-#h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
-#
-
 keep_prob = tf.placeholder("float")
-
-#h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
-#
-#W_fc2 = weight_variable([500, 32])
-#b_fc2 = bias_variable([32])
-#y = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.8
@@ -198,8 +186,7 @@ print("After    ", end=':')
 getSNR.getSNR(Image.open(r'../vis/1lena.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
 print("Ps       ", end=':')
 getSNR.getSNR(Image.open(r'../vis/lena_ps.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
-#print(LABELS[np.argmax(pred, 1)])
-#print(LABELS[y_])
+
 print("----------------------------------")
 
 
