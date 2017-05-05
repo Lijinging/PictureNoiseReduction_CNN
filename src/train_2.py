@@ -4,6 +4,7 @@ import tensorflow as tf
 import scipy.io as scio
 import numpy as np
 
+
 '''
 设置输入数据
 '''
@@ -15,13 +16,11 @@ test_data = test_data_raw['data'].astype('float32') / 255.0
 
 train_label = train_data_raw['label'].astype('float32') / 255.0
 test_label = test_data_raw['label'].astype('float32') / 255.0
-
-
 # label:
-# train_label = np.zeros((train_data.shape[0], 65536))
-# test_label = np.zeros((test_data.shape[0], 65536))
-# train_label[np.array(range(train_data_raw['label'].shape[0])), train_data_raw['label'][:, 0]] = 1
-# test_label[np.array(range(test_data_raw['label'].shape[0])), test_data_raw['label'][:, 0]] = 1
+#train_label = np.zeros((train_data.shape[0], 65536))
+#test_label = np.zeros((test_data.shape[0], 65536))
+#train_label[np.array(range(train_data_raw['label'].shape[0])), train_data_raw['label'][:, 0]] = 1
+#test_label[np.array(range(test_data_raw['label'].shape[0])), test_data_raw['label'][:, 0]] = 1
 
 
 def weight_variable(shape):
@@ -41,7 +40,6 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                           strides=[1, 2, 2, 1], padding='SAME')
-
 
 def batchnormalize(X, eps=1e-8, g=None, b=None):
     if X.get_shape().ndims == 4:
@@ -69,7 +67,6 @@ def batchnormalize(X, eps=1e-8, g=None, b=None):
 
     return X
 
-
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.8
 sess = tf.InteractiveSession(config=config)
@@ -91,25 +88,20 @@ W_conv3 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
 b_conv3 = bias_variable([24])  # 第二层卷积层的偏置量
 h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
 
-W_conv4 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
-b_conv4 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv4 = tf.nn.relu(batchnormalize(conv2d(h_conv3, W_conv4) + b_conv4))
-
-W_conv5 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
-b_conv5 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv5 = conv2d(h_conv4, W_conv5) + b_conv5
-y = tf.reshape(h_conv5, [-1, 65536])
+W_conv4 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
+b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
+h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
+y = tf.reshape(h_conv4, [-1, 65536])
 
 keep_prob = tf.placeholder("float")
 
-cross_entropy = tf.reduce_sum((y_ - y) ** 2)
-train_step = tf.train.AdamOptimizer(8e-4).minimize(cross_entropy)
+cross_entropy = tf.reduce_sum((y_ - y)**2)
+train_step = tf.train.AdamOptimizer(2e-4).minimize(cross_entropy)
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 saver = tf.train.Saver()
 sess.run(tf.global_variables_initializer())
-
-
-# saver.restore(sess, r"..\model_1\model.ckpt")
+#saver.restore(sess, r"..\model_2\model.ckpt")
 
 
 def next_batch(data, label, begin, length):
@@ -124,7 +116,7 @@ def next_batch(data, label, begin, length):
     return add
 
 
-for i in range(4500):
+for i in range(9000):
     size = 10
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
@@ -134,10 +126,14 @@ for i in range(4500):
         print("test loss %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))
     if i % 20 == 0:
-        save_path = r"..\model_1\model_%d.ckpt" % i
+
+        save_path = r"..\model_2\model_%d.ckpt" % i
         saver.save(sess, save_path)
 
-save_path = r"..\model_1\model.ckpt"
+
+
+save_path = r"..\model_2\model.ckpt"
 saver.save(sess, save_path)
+
 
 sess.close()
