@@ -1,20 +1,10 @@
 # coding:utf-8
-
 import tensorflow as tf
-import scipy.io as scio
+from src import getSNR
+import scipy.misc
+import scipy.io
 import numpy as np
-
-'''
-设置输入数据
-'''
-train_data_raw = scio.loadmat("../data/train.mat")
-test_data_raw = scio.loadmat("../data/test.mat")
-# 数据归一化
-train_data = train_data_raw['data'].astype('float32') / 255.0
-test_data = test_data_raw['data'].astype('float32') / 255.0
-
-train_label = train_data_raw['label'].astype('float32') / 255.0
-test_label = test_data_raw['label'].astype('float32') / 255.0
+from PIL import Image
 
 
 def weight_variable(shape):
@@ -63,10 +53,6 @@ def batchnormalize(X, eps=1e-8, g=None, b=None):
     return X
 
 
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.8
-sess = tf.InteractiveSession(config=config)
-
 x = tf.placeholder(tf.float32, shape=[None, 65536])
 y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
@@ -91,41 +77,75 @@ y = tf.reshape(h_conv4, [-1, 65536])
 
 keep_prob = tf.placeholder("float")
 
-cross_entropy = tf.reduce_sum((y_ - y) ** 2)
-train_step = tf.train.AdamOptimizer(2e-4).minimize(cross_entropy)
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.8
+sess = tf.InteractiveSession(config=config)
+
 saver = tf.train.Saver()
-# sess.run(tf.global_variables_initializer())
-saver.restore(sess, r"..\model\model.ckpt")
+save_path = r"..\model\model_2080.ckpt"
+saver.restore(sess, save_path)
+
+'''
+设置输入数据
+'''
+test_data_raw = scipy.io.loadmat("../data/test.mat")
+# 数据归一化
+test_data = test_data_raw['data'][:10].astype('float32') / 255.0
+# label:
+y_ = test_data_raw['label'][:10, -1]
 
 
-def next_batch(data, label, begin, length):
-    if begin >= data.shape[0]:
-        begin = begin % data.shape[0]
-    if begin + length > data.shape[0]:
-        add = next_batch(data, label, 0, length - (data.shape[0] - begin))
-        add[0] = np.row_stack((data[begin:], add[0]))
-        add[1] = np.row_stack((label[begin:], add[1]))
-    else:
-        add = [data[begin:begin + length], label[begin:begin + length]]
-    return add
+def testImg(in_image):
+    p_r, p_g, p_b = in_image.split()
+
+    np_r = np.array(p_r.convert('L')).reshape(1, 65536).astype('float32') / 255.0
+    np_g = np.array(p_g.convert('L')).reshape(1, 65536).astype('float32') / 255.0
+    np_b = np.array(p_b.convert('L')).reshape(1, 65536).astype('float32') / 255.0
+
+    '''开始预测'''
+
+    pred = sess.run(y, feed_dict={x: np_r, keep_prob: 1.0})
+    np_r = np_r - pred
+    np_r = np_r * 255.0
+    np_r = np_r.astype(int)
+    for [i, j] in [(i, j) for i in range(np_r.shape[0]) for j in range(np_r.shape[1])]:
+        if np_r[i][j] < 0:
+            np_r[i][j] = 0
+        elif np_r[i][j] > 255:
+            np_r[i][j] = 255
+    np_r = np_r.reshape(256, 256)
+
+    pred = sess.run(y, feed_dict={x: np_g, keep_prob: 1.0})
+    np_g = np_g - pred
+    np_g = np_g * 255.0
+    np_g = np_g.astype(int)
+    for [i, j] in [(i, j) for i in range(np_g.shape[0]) for j in range(np_g.shape[1])]:
+        if np_g[i][j] < 0:
+            np_g[i][j] = 0
+        elif np_g[i][j] > 255:
+            np_g[i][j] = 255
+    np_g = np_g.reshape(256, 256)
+
+    pred = sess.run(y, feed_dict={x: np_b, keep_prob: 1.0})
+    np_b = np_b - pred
+    np_b = np_b * 255.0
+    np_b = np_b.astype(int)
+    for [i, j] in [(i, j) for i in range(np_b.shape[0]) for j in range(np_b.shape[1])]:
+        if np_b[i][j] < 0:
+            np_b[i][j] = 0
+        elif np_b[i][j] > 255:
+            np_b[i][j] = 255
+    np_b = np_b.reshape(256, 256)
+
+    p_r = Image.fromarray(np_r).convert('L')
+    p_g = Image.fromarray(np_g).convert('L')
+    p_b = Image.fromarray(np_b).convert('L')
+
+    im_out = Image.merge("RGB", (p_r, p_g, p_b))
+    # im_out.show()
+    im_out.save('lena.png')
 
 
-for i in range(4500):
-    size = 50
-    # batch = mnist.train.next_batch(100)
-    batch = next_batch(train_data, train_label, i * size, size)
-    train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-    if i % 5 == 0:
-        print(i, end=":")
-        print("test loss %g" % accuracy.eval(feed_dict={
-            x: test_data, y_: test_label, keep_prob: 1.0}))
-    if i % 20 == 0:
-        save_path = r"..\model\model_%d.ckpt" % i
-        saver.save(sess, save_path)
-
-save_path = r"..\model\model.ckpt"
-saver.save(sess, save_path)
+testImg(Image.open(r'../lena_gauss_rgb.png'))
 
 sess.close()
