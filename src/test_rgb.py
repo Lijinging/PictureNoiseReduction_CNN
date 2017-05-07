@@ -95,7 +95,7 @@ test_data = test_data_raw['data'][:10].astype('float32') / 255.0
 y_ = test_data_raw['label'][:10, -1]
 
 
-def testImg(in_image):
+def testImg(in_image, filepath):
     p_r, p_g, p_b = in_image.split()
 
     np_r = np.array(p_r.convert('L')).reshape(1, 65536).astype('float32') / 255.0
@@ -143,9 +143,9 @@ def testImg(in_image):
 
     im_out = Image.merge("RGB", (p_r, p_g, p_b))
     # im_out.show()
-    im_out.save('lena.png')
+    im_out.save(filepath, "PNG")
 
 
-testImg(Image.open(r'../lena_gauss_rgb.png'))
+testImg(Image.open(r'../pic_gauss_rgb.png'), r'../pic.png')
 
 sess.close()
