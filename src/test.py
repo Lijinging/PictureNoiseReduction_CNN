@@ -52,6 +52,36 @@ def batchnormalize(X, eps=1e-8, g=None, b=None):
 
     return X
 
+def bias(name, shape, bias_start=0.0, trainable=True):
+    return tf.get_variable(name, shape, tf.float32, trainable=trainable,
+                           initializer=tf.constant_initializer(bias_start, dtype=tf.float32))
+
+def batch_norm(value, is_train=True, name='batch_norm', eps=1e-5, momentum=0.9):
+    with tf.variable_scope(name):
+        ema = tf.train.ExponentialMovingAverage(decay=momentum)
+        shape = value.get_shape().as_list()[-1]
+        beta = bias('beta', [shape], bias_start=0.0)
+        gamma = bias('gamma', [shape], bias_start=1.0)
+        if is_train:
+            batch_mean, batch_variance = tf.nn.moments(value, list(range(len(value.get_shape().as_list()) - 1)),
+                                                       name='moments')
+            moving_mean = bias('moving_mean', [shape], 0.0, False)
+            moving_variance = bias('moving_variance', [shape], 1.0, False)
+            with tf.variable_scope(tf.get_variable_scope(), reuse=False):
+                ema_apply_op = ema.apply([batch_mean, batch_variance])
+            assign_mean = moving_mean.assign(ema.average(batch_mean))
+            assign_variance = moving_variance.assign(ema.average(batch_variance))
+            with tf.control_dependencies([ema_apply_op]):
+                mean, variance = tf.identity(batch_mean), tf.identity(batch_variance)
+            with tf.control_dependencies([assign_mean, assign_variance]):
+                return tf.nn.batch_normalization(value, mean, variance, beta, gamma, 1e-5)
+        else:
+            mean = bias('moving_mean', [shape], 0.0, False)
+            variance = bias('moving_variance', [shape], 1.0, False)
+            return tf.nn.batch_normalization(value, mean, variance, beta, gamma, eps)
+
+
+
 
 x = tf.placeholder(tf.float32, shape=[None, 65536])
 y_ = tf.placeholder(tf.float32, shape=[None, 65536])
@@ -61,13 +91,14 @@ x_image = tf.reshape(x, [-1, 256, 256, 1])
 W_conv1 = weight_variable([5, 5, 1, 24])  # 第一层卷积层
 b_conv1 = bias_variable([24])  # 第一层卷积层的偏置量
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+
 W_conv2 = weight_variable([5, 5, 24, 24])  # 第二次卷积层
 b_conv2 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
+h_conv2 = tf.nn.relu(batch_norm(conv2d(h_conv1, W_conv2) + b_conv2, name='h2'))
 
 W_conv3 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
 b_conv3 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
+h_conv3 = tf.nn.relu(batch_norm(conv2d(h_conv2, W_conv3) + b_conv3, name='h3'))
 
 W_conv4 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
 b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
