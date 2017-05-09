@@ -27,6 +27,7 @@ def max_pool_2x2(x):
 
 
 def batchnormalize(X, eps=1e-8, g=None, b=None):
+    return X
     if X.get_shape().ndims == 4:
         mean = tf.reduce_mean(X, [0, 1, 2])
         std = tf.reduce_mean(tf.square(X - mean), [0, 1, 2])
@@ -82,7 +83,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.8
 sess = tf.InteractiveSession(config=config)
 
 saver = tf.train.Saver()
-save_path = r"..\model\model_2080.ckpt"
+save_path = r"..\model\model.ckpt"
 saver.restore(sess, save_path)
 
 '''
@@ -95,6 +96,31 @@ test_data = test_data_raw['data'][:10].astype('float32') / 255.0
 y_ = test_data_raw['label'][:10, -1]
 
 
+def toImageFromRGBArray(arr_r, arr_g, arr_b):
+    arr_r = arr_r.astype(int)
+    arr_g = arr_g.astype(int)
+    arr_b = arr_b.astype(int)
+    for [i, j] in [(i, j) for i in range(arr_r.shape[0]) for j in range(arr_r.shape[1])]:
+        if arr_r[i][j] < 0:
+            arr_r[i][j] = 0
+        elif arr_r[i][j] > 255:
+            arr_r[i][j] = 255
+        if arr_g[i][j] < 0:
+            arr_g[i][j] = 0
+        elif arr_g[i][j] > 255:
+            arr_g[i][j] = 255
+        if arr_b[i][j] < 0:
+            arr_b[i][j] = 0
+        elif arr_b[i][j] > 255:
+            arr_b[i][j] = 255
+
+    arr_r = Image.fromarray(arr_r).convert('L')
+    arr_g = Image.fromarray(arr_g).convert('L')
+    arr_b = Image.fromarray(arr_b).convert('L')
+
+    return Image.merge("RGB", (arr_r, arr_g, arr_b))
+
+
 def testImg(in_image, filepath):
     p_r, p_g, p_b = in_image.split()
 
@@ -104,48 +130,28 @@ def testImg(in_image, filepath):
 
     '''开始预测'''
 
-    pred = sess.run(y, feed_dict={x: np_r, keep_prob: 1.0})
-    np_r = np_r - pred
-    np_r = np_r * 255.0
-    np_r = np_r.astype(int)
-    for [i, j] in [(i, j) for i in range(np_r.shape[0]) for j in range(np_r.shape[1])]:
-        if np_r[i][j] < 0:
-            np_r[i][j] = 0
-        elif np_r[i][j] > 255:
-            np_r[i][j] = 255
-    np_r = np_r.reshape(256, 256)
+    r_noise = sess.run(y, feed_dict={x: np_r, keep_prob: 1.0})
+    np_r = ((np_r - r_noise) * 255.0).astype(int).reshape(256, 256)
+    r_noise = (r_noise * 255.0).astype(int).reshape(256, 256)
 
-    pred = sess.run(y, feed_dict={x: np_g, keep_prob: 1.0})
-    np_g = np_g - pred
-    np_g = np_g * 255.0
-    np_g = np_g.astype(int)
-    for [i, j] in [(i, j) for i in range(np_g.shape[0]) for j in range(np_g.shape[1])]:
-        if np_g[i][j] < 0:
-            np_g[i][j] = 0
-        elif np_g[i][j] > 255:
-            np_g[i][j] = 255
-    np_g = np_g.reshape(256, 256)
+    g_noise = sess.run(y, feed_dict={x: np_g, keep_prob: 1.0})
+    np_g = ((np_g - g_noise) * 255.0).astype(int).reshape(256, 256)
+    g_noise = (g_noise * 255.0).astype(int).reshape(256, 256)
 
-    pred = sess.run(y, feed_dict={x: np_b, keep_prob: 1.0})
-    np_b = np_b - pred
-    np_b = np_b * 255.0
-    np_b = np_b.astype(int)
-    for [i, j] in [(i, j) for i in range(np_b.shape[0]) for j in range(np_b.shape[1])]:
-        if np_b[i][j] < 0:
-            np_b[i][j] = 0
-        elif np_b[i][j] > 255:
-            np_b[i][j] = 255
-    np_b = np_b.reshape(256, 256)
+    b_noise = sess.run(y, feed_dict={x: np_b, keep_prob: 1.0})
+    np_b = ((np_b - b_noise) * 255.0).astype(int).reshape(256, 256)
+    b_noise = (b_noise * 255.0).astype(int).reshape(256, 256)
 
-    p_r = Image.fromarray(np_r).convert('L')
-    p_g = Image.fromarray(np_g).convert('L')
-    p_b = Image.fromarray(np_b).convert('L')
-
-    im_out = Image.merge("RGB", (p_r, p_g, p_b))
+    im_out = toImageFromRGBArray(np_r, np_g, np_b)
+    noise_out = toImageFromRGBArray(r_noise, g_noise, b_noise)
     # im_out.show()
     im_out.save(filepath, "PNG")
+    noise_out.save(filepath[:-4] + "_noise.png", "PNG")
 
 
-testImg(Image.open(r'../pic_gauss_rgb.png'), r'../pic.png')
+testImg(Image.open(r'../lena_gauss_rgb.png'), r'../lena1.png')
+testImg(Image.open(r'../green_gauss_rgb.png'), r'../green_after.png')
+testImg(Image.open(r'../bird_gauss_rgb.png'), r'../bird_after.png')
+testImg(Image.open(r'../new_gauss_rgb.png'), r'../new_after.png')
 
 sess.close()

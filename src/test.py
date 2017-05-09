@@ -113,7 +113,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.8
 sess = tf.InteractiveSession(config=config)
 
 saver = tf.train.Saver()
-save_path = r"..\model\model_2080.ckpt"
+save_path = r"..\model\model.ckpt"
 saver.restore(sess, save_path)
 
 '''

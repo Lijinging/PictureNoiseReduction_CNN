@@ -128,7 +128,7 @@ correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 saver = tf.train.Saver()
 # sess.run(tf.global_variables_initializer())
-saver.restore(sess, r"..\model\model_1120.ckpt")
+saver.restore(sess, r"..\model\model.ckpt")
 
 
 def next_batch(data, label, begin, length):
@@ -143,7 +143,7 @@ def next_batch(data, label, begin, length):
     return add
 
 
-for i in range(2400):
+for i in range(9000):
     size = 50
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
