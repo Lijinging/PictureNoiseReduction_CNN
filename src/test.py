@@ -27,6 +27,7 @@ def max_pool_2x2(x):
 
 
 def batchnormalize(X, eps=1e-8, g=None, b=None):
+    return X
     if X.get_shape().ndims == 4:
         mean = tf.reduce_mean(X, [0, 1, 2])
         std = tf.reduce_mean(tf.square(X - mean), [0, 1, 2])
@@ -94,11 +95,11 @@ h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 
 W_conv2 = weight_variable([5, 5, 24, 24])  # 第二次卷积层
 b_conv2 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.relu(batch_norm(conv2d(h_conv1, W_conv2) + b_conv2, name='h2'))
+h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
 
 W_conv3 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
 b_conv3 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv3 = tf.nn.relu(batch_norm(conv2d(h_conv2, W_conv3) + b_conv3, name='h3'))
+h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
 
 W_conv4 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
 b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
