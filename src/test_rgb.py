@@ -3,6 +3,7 @@ import tensorflow as tf
 from src import getSNR
 import scipy.misc
 import scipy.io
+import os
 import numpy as np
 from PIL import Image
 
@@ -74,7 +75,7 @@ h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
 W_conv4 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
 b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
 h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
-y = tf.reshape(h_conv4, [-1, 65536])
+y = tf.reshape(h_conv4, [1, -1])
 
 keep_prob = tf.placeholder("float")
 
@@ -121,7 +122,7 @@ def toImageFromRGBArray(arr_r, arr_g, arr_b):
     return Image.merge("RGB", (arr_r, arr_g, arr_b))
 
 
-def testImg(in_image, filepath):
+def testImg(in_image, filepath, noisepath):
     p_r, p_g, p_b = in_image.split()
 
     np_r = np.array(p_r.convert('L')).reshape(1, 65536).astype('float32') / 255.0
@@ -143,15 +144,17 @@ def testImg(in_image, filepath):
     b_noise = (b_noise * 255.0).astype(int).reshape(256, 256)
 
     im_out = toImageFromRGBArray(np_r, np_g, np_b)
-    noise_out = toImageFromRGBArray(r_noise, g_noise, b_noise)
+    noise_out = toImageFromRGBArray(abs(r_noise), abs(g_noise), abs(b_noise))
     # im_out.show()
-    im_out.save(filepath, "PNG")
-    noise_out.save(filepath[:-4] + "_noise.png", "PNG")
+    im_out.save(filepath, filepath[-3:])
+    noise_out.save(noisepath, noisepath[-3:1])
 
 
-testImg(Image.open(r'../lena_gauss_rgb.png'), r'../lena1.png')
-testImg(Image.open(r'../green_gauss_rgb.png'), r'../green_after.png')
-testImg(Image.open(r'../bird_gauss_rgb.png'), r'../bird_after.png')
-testImg(Image.open(r'../new_gauss_rgb.png'), r'../new_after.png')
+pic_with_noise_path = r'../show/pic_with_noise/'
+pic_save_path = r'../show/after/'
+noise_path = r'../show/noise/'
+for infile in os.listdir(pic_with_noise_path):
+    print(infile)
+    testImg(Image.open(pic_with_noise_path + infile), pic_save_path + infile, noise_path + infile)
 
 sess.close()
