@@ -133,15 +133,15 @@ def testImg(in_image, filepath, noisepath):
 
     r_noise = sess.run(y, feed_dict={x: np_r, keep_prob: 1.0})
     np_r = ((np_r - r_noise) * 255.0).astype(int).reshape(256, 256)
-    r_noise = (r_noise * 255.0).astype(int).reshape(256, 256)
+    r_noise = (r_noise * 255.0 + 128).astype(int).reshape(256, 256)
 
     g_noise = sess.run(y, feed_dict={x: np_g, keep_prob: 1.0})
     np_g = ((np_g - g_noise) * 255.0).astype(int).reshape(256, 256)
-    g_noise = (g_noise * 255.0).astype(int).reshape(256, 256)
+    g_noise = (g_noise * 255.0 + 128).astype(int).reshape(256, 256)
 
     b_noise = sess.run(y, feed_dict={x: np_b, keep_prob: 1.0})
     np_b = ((np_b - b_noise) * 255.0).astype(int).reshape(256, 256)
-    b_noise = (b_noise * 255.0).astype(int).reshape(256, 256)
+    b_noise = (b_noise * 255.0 + 128).astype(int).reshape(256, 256)
 
     im_out = toImageFromRGBArray(np_r, np_g, np_b)
     noise_out = toImageFromRGBArray(abs(r_noise), abs(g_noise), abs(b_noise))
