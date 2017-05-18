@@ -56,26 +56,22 @@ y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
 x_image = tf.reshape(x, [-1, 256, 256, 1])
 
-W_conv1 = weight_variable([7, 7, 1, 24])  # 第一层卷积层
+W_conv1 = weight_variable([3, 3, 1, 24])  # 第一层卷积层
 b_conv1 = bias_variable([24])  # 第一层卷积层的偏置量
 h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
 
-W_conv2 = weight_variable([7, 7, 24, 24])  # 第二次卷积层
+W_conv2 = weight_variable([3, 3, 24, 24])  # 第二次卷积层
 b_conv2 = bias_variable([24])  # 第二层卷积层的偏置量
 h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
 
-W_conv3 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
+W_conv3 = weight_variable([3, 3, 24, 24])  # 第三次卷积层
 b_conv3 = bias_variable([24])  # 第二层卷积层的偏置量
 h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
 
-W_conv4 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
-b_conv4 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv4 = tf.nn.relu(batchnormalize(conv2d(h_conv3, W_conv4) + b_conv4))
-
-W_conv5 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
-b_conv5 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv5 = conv2d(h_conv4, W_conv5) + b_conv5
-y = tf.reshape(h_conv5, [-1, 65536])
+W_conv4 = weight_variable([3, 3, 24, 1])  # 第四次卷积层
+b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
+h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
+y = tf.reshape(h_conv4, [-1, 65536])
 
 keep_prob = tf.placeholder("float")
 
@@ -84,7 +80,7 @@ config.gpu_options.per_process_gpu_memory_fraction = 0.8
 sess = tf.InteractiveSession(config=config)
 
 saver = tf.train.Saver()
-save_path = r"..\model_1\model_100.ckpt"
+save_path = r"..\model_new\model_5120.ckpt"
 saver.restore(sess, save_path)
 
 '''
@@ -97,9 +93,9 @@ test_data = test_data_raw['data'][:10].astype('float32')
 y_ = test_data_raw['label'][:10, -1]
 
 
-im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1,65536)
+im_test = np.array(Image.open('../show/pic_with_noise/lena_16.png').convert('L')).reshape(1,65536)
 scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(256,256))
-im_test = im_test.astype('float32')
+im_test = im_test.astype('float32')/255.0
 
 im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65536)
 
@@ -107,14 +103,14 @@ im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65
 '''开始预测'''
 pred = sess.run(y, feed_dict={x: im_test, keep_prob:1.0})
 im_out = im_test - pred
-im_out = im_out.astype(int)
+im_out = (im_out*255.0).astype(int)
 for i in range(im_out.shape[0]):
     for j in range(im_out.shape[1]):
         if im_out[i][j]<0:
             im_out[i][j] = 0
         elif im_out[i][j]>255:
             im_out[i][j] = 255
-pred = pred.astype(int)
+pred = (pred*255.0).astype(int)
 for i in range(pred.shape[0]):
     for j in range(pred.shape[1]):
         if pred[i][j]<0:
@@ -122,7 +118,7 @@ for i in range(pred.shape[0]):
         elif pred[i][j]>255:
             pred[i][j] = 255
 
-def testImg(infile = '../pic_gauss/lena.png', infile_raw = '../pic_raw/lena.png', filename = 'lena'):
+def testImg(infile = '../show/pic_with_noise/lena_7.png', infile_raw = '../pic_raw/lena.png', filename = 'lena'):
     im_test = np.array(Image.open(infile).convert('L')).reshape(1, 65536)
     scipy.misc.imsave(infile, im_test.reshape(256, 256))
     im_test = im_test.astype('float32') / 255.0

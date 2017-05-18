@@ -7,8 +7,8 @@ import numpy as np
 '''
 设置输入数据
 '''
-train_data_raw = scio.loadmat("../data/train.mat")
-test_data_raw = scio.loadmat("../data/test.mat")
+train_data_raw = scio.loadmat("../data/train_rand_6_25.mat")
+test_data_raw = scio.loadmat("../data/test_rand_6_25.mat")
 # 数据归一化
 train_data = train_data_raw['data'].astype('float32') / 255.0
 test_data = test_data_raw['data'].astype('float32') / 255.0
@@ -128,7 +128,7 @@ correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 saver = tf.train.Saver()
 # sess.run(tf.global_variables_initializer())
-saver.restore(sess, r"..\model\model.ckpt")
+saver.restore(sess, r"..\model_rand\model_540.ckpt")
 
 
 def next_batch(data, label, begin, length):
@@ -148,15 +148,15 @@ for i in range(9000):
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-    if i % 5 == 0:
-        print(i, end=":")
+    if (i+1) % 20 == 0:
+        print((i + 1), end=":")
         print("test loss %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))
     if i % 20 == 0:
-        save_path = r"..\model\model_%d.ckpt" % i
+        save_path = r"..\model_rand\model_%d.ckpt" % i
         saver.save(sess, save_path)
 
-save_path = r"..\model\model.ckpt"
+save_path = r"..\model_rand\model.ckpt"
 saver.save(sess, save_path)
 
 sess.close()

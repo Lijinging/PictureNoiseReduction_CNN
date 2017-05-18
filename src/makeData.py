@@ -4,6 +4,7 @@ import os
 import scipy.io as sio
 import numpy
 from PIL import Image
+import random
 
 dir_path = r'../pic_gauss/'
 raw_path = r'../pic_raw/'
@@ -22,12 +23,15 @@ filelist = numpy.array(filelist)
 numpy.random.shuffle(filelist)
 print(len(filelist))
 cnt = 0
-limit = 16
+limit_u = 25
+limit_d = 6
 
 for infile in filelist:
 
     cnt = cnt + 1
-    print(cnt, infile)
+    limit = random.randint(limit_d, limit_u)
+    print(cnt, infile, limit)
+
 
     gauss = numpy.random.normal(0, limit, 65536).astype(int)
     if cnt >= testNum:
@@ -44,5 +48,5 @@ for infile in filelist:
 
 
 
-sio.savemat(mat_path+'train.mat', {'data': train_data, 'label': train_label})
-sio.savemat(mat_path+'test.mat', {'data': test_data, 'label': test_label})
+sio.savemat(mat_path+'train_rand_6_25.mat', {'data': train_data, 'label': train_label})
+sio.savemat(mat_path+'test_rand_6_25.mat', {'data': test_data, 'label': test_label})

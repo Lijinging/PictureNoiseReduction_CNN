@@ -6,13 +6,13 @@ import _thread
 
 limit = 16
 
-for infile in glob.glob(r'..\pic_raw\lena.png'):
+for infile in glob.glob(r'..\show\Test12\*.png'):
     im = Image.open(infile).convert('L')
     for i in range(im.size[0]):
         gauss = np.random.normal(0, limit, im.size[1])
         for j in range(im.size[1]):
             im.putpixel((i,j), int(im.getpixel((i,j))+ gauss[j]))
-    im.save('..\pic_gauss\\'+os.path.splitext(infile)[0][11:]+'.png','PNG')
+    im.save('..\show\Test12_with_noise\\'+os.path.splitext(infile)[0][15:]+'.png','PNG')
     #print('..\pic_gauss\\'+os.path.splitext(infile)[0][11:]+'.png','PNG')
 
     print(infile)

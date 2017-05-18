@@ -7,14 +7,14 @@ import numpy as np
 '''
 设置输入数据
 '''
-train_data_raw = scio.loadmat("../data/train.mat")
-test_data_raw = scio.loadmat("../data/test.mat")
+train_data_raw = scio.loadmat("../data/train_8.mat")
+test_data_raw = scio.loadmat("../data/test_8.mat")
 # 数据归一化
-train_data = train_data_raw['data'].astype('float32')
-test_data = test_data_raw['data'].astype('float32')
+train_data = train_data_raw['data'].astype('float32')/255.0
+test_data = test_data_raw['data'].astype('float32')/255.0
 
-train_label = train_data_raw['label'].astype('float32')
-test_label = test_data_raw['label'].astype('float32')
+train_label = train_data_raw['label'].astype('float32')/255.0
+test_label = test_data_raw['label'].astype('float32')/255.0
 
 
 # label:
@@ -79,37 +79,36 @@ y_ = tf.placeholder(tf.float32, shape=[None, 65536])
 
 x_image = tf.reshape(x, [-1, 256, 256, 1])
 
-W_conv1 = weight_variable([7, 7, 1, 24])  # 第一层卷积层
+W_conv1 = weight_variable([3, 3, 1, 24])  # 第一层卷积层
 b_conv1 = bias_variable([24])  # 第一层卷积层的偏置量
-h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+# h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+h_conv1 = conv2d(x_image, W_conv1) + b_conv1
 
-W_conv2 = weight_variable([7, 7, 24, 24])  # 第二次卷积层
+W_conv2 = weight_variable([3, 3, 24, 24])  # 第二次卷积层
 b_conv2 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
+# h_conv2 = tf.nn.relu(batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
+h_conv2 = (batchnormalize(conv2d(h_conv1, W_conv2) + b_conv2))
 
-W_conv3 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
+W_conv3 = weight_variable([3, 3, 24, 24])  # 第三次卷积层
 b_conv3 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
+# h_conv3 = tf.nn.relu(batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
+h_conv3 = (batchnormalize(conv2d(h_conv2, W_conv3) + b_conv3))
 
-W_conv4 = weight_variable([5, 5, 24, 24])  # 第三次卷积层
-b_conv4 = bias_variable([24])  # 第二层卷积层的偏置量
-h_conv4 = tf.nn.relu(batchnormalize(conv2d(h_conv3, W_conv4) + b_conv4))
-
-W_conv5 = weight_variable([5, 5, 24, 1])  # 第四次卷积层
-b_conv5 = bias_variable([1])  # 第二层卷积层的偏置量
-h_conv5 = conv2d(h_conv4, W_conv5) + b_conv5
-y = tf.reshape(h_conv5, [-1, 65536])
+W_conv4 = weight_variable([3, 3, 24, 1])  # 第四次卷积层
+b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
+h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
+y = tf.reshape(h_conv4, [-1, 65536])
 
 keep_prob = tf.placeholder("float")
 
-cross_entropy = tf.reduce_sum((y_ - y) ** 2)
-train_step = tf.train.AdamOptimizer(8e-4).minimize(cross_entropy)
+cross_entropy = tf.reduce_sum((y_ - y)**2)
+train_step = tf.train.AdamOptimizer(4e-4).minimize(cross_entropy)
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
 saver = tf.train.Saver()
 sess.run(tf.global_variables_initializer())
 
 
-# saver.restore(sess, r"..\model_1\model.ckpt")
+# saver.restore(sess, r"..\model_new\model_2600.ckpt")
 
 
 def next_batch(data, label, begin, length):
@@ -124,20 +123,20 @@ def next_batch(data, label, begin, length):
     return add
 
 
-for i in range(4500):
-    size = 10
+for i in range(6000):
+    size = 30
     # batch = mnist.train.next_batch(100)
     batch = next_batch(train_data, train_label, i * size, size)
     train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-    if i % 5 == 0:
+    if i % 10 == 0:
         print(i, end=":")
         print("test loss %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))
     if i % 20 == 0:
-        save_path = r"..\model_1\model_%d.ckpt" % i
+        save_path = r"..\model_new\model_%d.ckpt" % i
         saver.save(sess, save_path)
 
-save_path = r"..\model_1\model.ckpt"
+save_path = r"..\model_new\model.ckpt"
 saver.save(sess, save_path)
 
 sess.close()
