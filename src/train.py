@@ -7,8 +7,8 @@ import numpy as np
 '''
 设置输入数据
 '''
-train_data_raw = scio.loadmat("../data/train_rand_6_25.mat")
-test_data_raw = scio.loadmat("../data/test_rand_6_25.mat")
+train_data_raw = scio.loadmat("../data/train_rand_16.mat")
+test_data_raw = scio.loadmat("../data/test_rand_16.mat")
 # 数据归一化
 train_data = train_data_raw['data'].astype('float32') / 255.0
 test_data = test_data_raw['data'].astype('float32') / 255.0
@@ -122,9 +122,19 @@ b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
 h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
 y = tf.reshape(h_conv4, [-1, 65536])
 
+
+def cal_loss(y, y_, size, ratio = 0.01):
+    gauss = np.random.random_integers(0, size, int(size * ratio)).tolist()
+    loss = 0
+    for index in gauss:
+        loss += (y[index] - y_[index]) ** 2
+        print("lijing", index, loss)
+    return loss
+
+
 keep_prob = tf.placeholder("float")
 
-cross_entropy = tf.reduce_sum((y_ - y) ** 2)
+cross_entropy = tf.reduce_sum(cal_loss(y, y_, 65536))
 train_step = tf.train.AdamOptimizer(learning_rate=2e-4, epsilon=1e-8).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(cross_entropy, "float"))
@@ -155,10 +165,10 @@ for i in range(9000):
         print("test loss %g" % accuracy.eval(feed_dict={
             x: test_data, y_: test_label, keep_prob: 1.0}))
     if i % 20 == 0:
-        save_path = r"..\model_rand\model_%d.ckpt" % i
+        save_path = r"..\model\model_%d.ckpt" % i
         saver.save(sess, save_path)
 
-save_path = r"..\model_rand\model.ckpt"
+save_path = r"..\model\model.ckpt"
 saver.save(sess, save_path)
 
 sess.close()
