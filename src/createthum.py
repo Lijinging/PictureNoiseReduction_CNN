@@ -1,4 +1,4 @@
-#coding:GBK
+# coding:utf-8
 from PIL import Image
 import glob,os
 size=256,256
@@ -17,7 +17,7 @@ for infile in glob.glob(r"../pic_raw/*.bmp"):
     print(cnt)
 
 for infile in glob.glob(r"../pic_raw/*.jpg"):
-    file,ext=os.path.splitext(infile) 
+    file,ext=os.path.splitext(infile)
     im=Image.open(infile)
     minsize = min(im.size)
     box=(im.size[0]/2-minsize/2, im.size[1]/2-minsize/2,im.size[0]/2+minsize/2, im.size[1]/2+minsize/2)
