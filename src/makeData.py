@@ -23,8 +23,8 @@ filelist = numpy.array(filelist)
 numpy.random.shuffle(filelist)
 print(len(filelist))
 cnt = 0
-limit_u = 16
-limit_d = 16
+limit_u = 25
+limit_d = 6
 
 for infile in filelist:
 
@@ -48,5 +48,5 @@ for infile in filelist:
 
 
 
-sio.savemat(mat_path+'train_rand_16.mat', {'data': train_data, 'label': train_label})
-sio.savemat(mat_path+'test_rand_16.mat', {'data': test_data, 'label': test_label})
+sio.savemat(mat_path+'train_rand_6_25.mat', {'data': train_data, 'label': train_label})
+sio.savemat(mat_path+'test_rand_6_25.mat', {'data': test_data, 'label': test_label})
