@@ -6,6 +6,8 @@ import scipy.io
 import numpy as np
 from PIL import Image
 
+picSize = 144, 144
+pixelNum = picSize[0] * picSize[1]
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -84,10 +86,10 @@ def batch_norm(value, is_train=True, name='batch_norm', eps=1e-5, momentum=0.9):
 
 
 
-x = tf.placeholder(tf.float32, shape=[None, 65536])
-y_ = tf.placeholder(tf.float32, shape=[None, 65536])
+x = tf.placeholder(tf.float32, shape=[None, pixelNum])
+y_ = tf.placeholder(tf.float32, shape=[None, pixelNum])
 
-x_image = tf.reshape(x, [-1, 256, 256, 1])
+x_image = tf.reshape(x, [-1, picSize[0], picSize[1], 1])
 
 W_conv1 = weight_variable([5, 5, 1, 30])  # 第一层卷积层
 b_conv1 = bias_variable([30])  # 第一层卷积层的偏置量
@@ -106,7 +108,7 @@ h_conv3 = tf.nn.relu(tf.layers.batch_normalization(conv2d(h_conv2, W_conv3) + b_
 W_conv4 = weight_variable([5, 5, 30, 1])  # 第四次卷积层
 b_conv4 = bias_variable([1])  # 第二层卷积层的偏置量
 h_conv4 = conv2d(h_conv3, W_conv4) + b_conv4
-y = tf.reshape(h_conv4, [-1, 65536])
+y = tf.reshape(h_conv4, [-1, pixelNum])
 
 keep_prob = tf.placeholder("float")
 
@@ -127,11 +129,11 @@ test_data = test_data_raw['data'][:10].astype('float32') / 255.0
 # label:
 y_ = test_data_raw['label'][:10, -1]
 
-im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1, 65536)
-scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(256, 256))
+im_test = np.array(Image.open('../pic_gauss/lena.png').convert('L')).reshape(1, pixelNum)
+scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(picSize[0], picSize[1]))
 im_test = im_test.astype('float32') / 255.0
 
-im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1, 65536)
+im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1, pixelNum)
 
 '''开始预测'''
 pred = sess.run(y, feed_dict={x: im_test, keep_prob: 1.0})
