@@ -95,11 +95,11 @@ test_data = test_data_raw['data'][:10].astype('float32')
 y_ = test_data_raw['label'][:10, -1]
 
 
-im_test = np.array(Image.open('../show/pic_with_noise/lena_16.png').convert('L')).reshape(1,65536)
-scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(256,256))
+im_test = np.array(Image.open('../show/pic_with_noise/lena_16.png').convert('L')).reshape(1,pixelNum)
+scipy.misc.imsave('../vis/0lena_test.jpg', im_test.reshape(picSize[0], picSize[1]))
 im_test = im_test.astype('float32')/255.0
 
-im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1,65536)
+im_label = np.array(Image.open('../pic_raw/lena.png').convert('L')).reshape(1, pixelNum)
 
 
 '''开始预测'''
@@ -121,11 +121,11 @@ for i in range(pred.shape[0]):
             pred[i][j] = 255
 
 def testImg(infile = '../show/pic_with_noise/lena_7.png', infile_raw = '../pic_raw/lena.png', filename = 'lena'):
-    im_test = np.array(Image.open(infile).convert('L')).reshape(1, 65536)
-    scipy.misc.imsave(infile, im_test.reshape(256, 256))
+    im_test = np.array(Image.open(infile).convert('L')).reshape(1, pixelNum)
+    scipy.misc.imsave(infile, im_test.reshape(picSize[0], picSize[1]))
     im_test = im_test.astype('float32') / 255.0
 
-    im_label = np.array(Image.open(infile_raw).convert('L')).reshape(1, 65536)
+    im_label = np.array(Image.open(infile_raw).convert('L')).reshape(1, pixelNum)
 
     '''开始预测'''
     pred = sess.run(y, feed_dict={x: im_test, keep_prob: 1.0})
@@ -146,10 +146,10 @@ def testImg(infile = '../show/pic_with_noise/lena_7.png', infile_raw = '../pic_r
                 pred[i][j] = -pred[i][j]
             elif pred[i][j] > 255:
                 pred[i][j] = 255
-    scipy.misc.imsave('../vis/0'+filename+'_test.jpg', im_test.reshape(256, 256))
-    scipy.misc.imsave('../vis/1'+filename+'.jpg', im_out.reshape(256, 256))
-    scipy.misc.imsave('../vis/3'+filename+'_noise.jpg', pred.reshape(256, 256))
-    scipy.misc.imsave('../vis/2'+filename+'_label.jpg', im_label.reshape(256, 256))
+    scipy.misc.imsave('../vis/0'+filename+'_test.jpg', im_test.reshape(picSize[0], picSize[1]))
+    scipy.misc.imsave('../vis/1'+filename+'.jpg', im_out.reshape(picSize[0], picSize[1]))
+    scipy.misc.imsave('../vis/3'+filename+'_noise.jpg', pred.reshape(picSize[0], picSize[1]))
+    scipy.misc.imsave('../vis/2'+filename+'_label.jpg', im_label.reshape(picSize[0], picSize[1]))
 
     print("Before   ", end=':')
     getSNR.getSNR(Image.open(r'../vis/0lena_test.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
@@ -157,9 +157,9 @@ def testImg(infile = '../show/pic_with_noise/lena_7.png', infile_raw = '../pic_r
     getSNR.getSNR(Image.open(r'../vis/1lena.jpg').convert('L'), Image.open(r'../vis/2lena_label.jpg').convert('L'))
 
 
-scipy.misc.imsave('../vis/1lena.jpg', im_out.reshape(256,256))
-scipy.misc.imsave('../vis/3lena_noise.jpg', pred.reshape(256,256))
-scipy.misc.imsave('../vis/2lena_label.jpg', im_label.reshape(256,256))
+scipy.misc.imsave('../vis/1lena.jpg', im_out.reshape(picSize[0], picSize[1]))
+scipy.misc.imsave('../vis/3lena_noise.jpg', pred.reshape(picSize[0], picSize[1]))
+scipy.misc.imsave('../vis/2lena_label.jpg', im_label.reshape(picSize[0], picSize[1]))
 
 
 print(pred)
